@@ -3,10 +3,12 @@ import { ErroHandler } from "./middlewares/globalErrorHandler";
 
 const app = express();
 
+app.use(express.json());
+// app.use(express.urlencoded());
+
 // routes
-app.get("/getData", (req, res) => {
-    res.json({ message: "WElcome Gmkandhro" });
-});
+import { userRouter } from "./user/userRouter.route";
+app.use("/api/users", userRouter);
 
 // error handler middleware
 

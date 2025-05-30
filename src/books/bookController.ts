@@ -4,6 +4,7 @@ import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary";
 import { Book } from "./bookModel";
 import { AuthRequest } from "../middlewares/auth";
 import { isValidObjectId } from "mongoose";
+import { BookTypes } from "./booktypes";
 
 const createBook = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -38,7 +39,7 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
             return next(createHttpError(400, "both files are required"));
         }
         const _req = req as AuthRequest;
-        const newBook = await Book.create({
+        const newBook: BookTypes = await Book.create({
             title,
             description,
             genre,
@@ -67,15 +68,13 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
     const { bookId } = req.params;
 
     if (!bookId || !isValidObjectId(bookId)) {
-        return next(createHttpError(400, "user id is missing"));
+        return next(createHttpError(400, "book id is missing"));
     }
     if (!title || !description || !genre) {
-        return next(
-            createHttpError(400, "Title, description and genre are required")
-        );
+        return next(createHttpError(400, "All fields are required"));
     }
 
-    const book = await Book.findById(bookId);
+    const book: BookTypes = (await Book.findById(bookId)) as BookTypes;
     const public_id_of_old_coverImage: string = book?.coverImage
         ?.split("/")[7]
         ?.split(".")[0] as string;
@@ -106,7 +105,7 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     const _req = req as AuthRequest;
-    const updateBook = await Book.findByIdAndUpdate(
+    const updateBook: BookTypes = (await Book.findByIdAndUpdate(
         bookId,
         {
             $set: {
@@ -119,7 +118,7 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
             },
         },
         { new: true }
-    );
+    )) as BookTypes;
 
     // console.log(updateBook);
 
@@ -168,7 +167,7 @@ const getSingleBook = async (
             return next(createHttpError(404, "Book not found."));
         }
 
-        return res.json(book);
+        res.json(book);
     } catch (error) {
         const err = error as Error;
         return next(
@@ -177,4 +176,50 @@ const getSingleBook = async (
     }
 };
 
-export { createBook, updateBook, listBooks, getSingleBook };
+const deleteBook = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const _req = req as AuthRequest;
+        if (!_req.user) {
+            return next(
+                createHttpError(
+                    400,
+                    "you are not authenticated to delete a book"
+                )
+            );
+        }
+        const { bookId } = req.params;
+
+        if (!bookId || !isValidObjectId(bookId)) {
+            return next(createHttpError(400, "bookis is missing"));
+        }
+
+        const book: BookTypes = (await Book.findById(bookId)) as BookTypes;
+
+        const public_id_of_old_coverImage: string = book?.coverImage
+            ?.split("/")[7]
+            ?.split(".")[0] as string;
+        await deleteFromCloudinary(public_id_of_old_coverImage);
+
+        const public_id_of_old_file: string = book?.file
+            ?.split("/")[7]
+            ?.split(".")[0] as string;
+
+        await deleteFromCloudinary(public_id_of_old_file);
+
+        await Book.findByIdAndDelete(bookId);
+
+        res.status(200).json({
+            message: "book deleted successful",
+        });
+    } catch (error) {
+        const err = error as Error;
+        return next(
+            createHttpError(
+                500,
+                err.message || "something went wrong while deleting"
+            )
+        );
+    }
+};
+
+export { createBook, updateBook, listBooks, getSingleBook, deleteBook };

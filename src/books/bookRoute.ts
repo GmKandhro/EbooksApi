@@ -1,5 +1,11 @@
 import { Router } from "express";
-import { createBook, updateBook } from "./bookController";
+import {
+    createBook,
+    updateBook,
+    listBooks,
+    getSingleBook,
+    deleteBook,
+} from "./bookController";
 import multer from "multer";
 import path from "node:path";
 
@@ -43,4 +49,8 @@ bookRouter.patch(
     ]),
     updateBook
 );
+
+bookRouter.get("/getAll", listBooks);
+bookRouter.delete("/delete/:bookId", deleteBook);
+bookRouter.get("/book/:bookId", getSingleBook);
 export { bookRouter };

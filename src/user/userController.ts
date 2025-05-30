@@ -87,7 +87,7 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
 
         const accesstoken: string = sign(
             {
-                id: user._id,
+                _id: user._id,
             },
             config.jwtSecret as string,
             {
@@ -95,10 +95,12 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
             }
         );
 
-        res.status(200).json({
-            message: "user login succssfull",
-            userToken: accesstoken,
-        });
+        res.status(200)
+            .cookie("accesstoken", accesstoken, { httpOnly: true })
+            .json({
+                message: "user login succssfull",
+                userToken: accesstoken,
+            });
     } catch (error) {
         const err = error as Error;
         return next(

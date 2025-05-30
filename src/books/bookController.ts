@@ -148,4 +148,33 @@ const listBooks = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-export { createBook, updateBook, listBooks };
+const getSingleBook = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const { bookId } = req.params;
+
+    if (!bookId || !isValidObjectId(bookId)) {
+        return next(createHttpError(400, "bookis is missing"));
+    }
+
+    try {
+        const book = await Book.findOne({ _id: bookId }).populate(
+            "author",
+            "name"
+        );
+        if (!book) {
+            return next(createHttpError(404, "Book not found."));
+        }
+
+        return res.json(book);
+    } catch (error) {
+        const err = error as Error;
+        return next(
+            createHttpError(500, err.message || "Error while getting a book")
+        );
+    }
+};
+
+export { createBook, updateBook, listBooks, getSingleBook };

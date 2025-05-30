@@ -38,9 +38,18 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
         }
 
         // generate accesstoken
+        const accesstoken: string = sign(
+            {
+                id: createduser._id,
+            },
+            config.jwtSecret as string,
+            {
+                expiresIn: "7d",
+            }
+        );
 
         res.status(200).json({
-            _id: createduser._id,
+            accesstoken: accesstoken,
             message: "user registered successfully",
         });
     } catch (error) {
@@ -61,7 +70,8 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
             email: email,
         })) as UserTypes;
 
-        console.log(user);
+        // console.log(user);
+
         if (!user) {
             const error = createHttpError(404, "user not found");
             next(error);
@@ -69,7 +79,7 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
 
         const checkPassword: boolean = await user.isPasswordCorrect(password);
 
-        console.log(checkPassword);
+        // console.log(checkPassword);
 
         if (!checkPassword) {
             return next(createHttpError(400, "email or password incorrect"));

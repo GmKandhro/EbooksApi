@@ -133,4 +133,19 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
     });
 };
 
-export { createBook, updateBook };
+const listBooks = async (req: Request, res: Response, next: NextFunction) => {
+    // const sleep = await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    try {
+        // todo: add pagination.
+        const book = await Book.find().populate("author", "name");
+        res.json(book);
+    } catch (error) {
+        const err = error as Error;
+        return next(
+            createHttpError(500, err.message || "Error while getting a book")
+        );
+    }
+};
+
+export { createBook, updateBook, listBooks };

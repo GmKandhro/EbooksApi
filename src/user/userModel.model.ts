@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { UserTypes } from "./userTypes.toyes";
+import { UserTypes } from "./userTypes";
 import bcrypt from "bcrypt";
 
 const userSchema = new Schema<UserTypes>(

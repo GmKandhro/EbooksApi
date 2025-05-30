@@ -7,7 +7,7 @@ app.use(express.json());
 // app.use(express.urlencoded());
 
 // routes
-import { userRouter } from "./user/userRouter.route";
+import { userRouter } from "./user/userRouter";
 app.use("/api/users", userRouter);
 
 // error handler middleware

@@ -18,6 +18,7 @@ export const uploadOnCloudinary = async (
 
         const response = await cloudinary.uploader.upload(localFilePath, {
             resource_type: "auto",
+            folder: "EbooksData",
         });
 
         fs.unlinkSync(localFilePath); // Delete the local file after upload
